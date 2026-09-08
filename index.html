@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1F4A44">
 <title>運行日誌</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -327,6 +331,16 @@ function showToast(msg){
 }
 
 /* ---------- persistence (Google スプレッドシート経由) ---------- */
+async function fetchWithTimeout(url, options, timeoutMs){
+  const controller = new AbortController();
+  const timer = setTimeout(()=> controller.abort(), timeoutMs || 10000);
+  try{
+    return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function buildPayload(){
   return {
     date: state.date,
@@ -349,11 +363,11 @@ function buildPayload(){
 }
 
 async function sendSave(){
-  const res = await fetch(SHEET_API_URL, {
+  const res = await fetchWithTimeout(SHEET_API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // プリフライトを避けるためtext/plainで送る
     body: JSON.stringify(buildPayload())
-  });
+  }, 10000);
   const data = await res.json();
   return !!(data && data.ok);
 }
@@ -361,7 +375,7 @@ async function sendSave(){
 async function loadDate(dateStr){
   showToast('読み込み中…');
   try{
-    const res = await fetch(`${SHEET_API_URL}?date=${encodeURIComponent(dateStr)}`);
+    const res = await fetchWithTimeout(`${SHEET_API_URL}?date=${encodeURIComponent(dateStr)}`, {}, 10000);
     const data = await res.json();
     if(data && data.ok && data.exists){
       const trips = (data.trips && data.trips.length>0)
@@ -392,7 +406,7 @@ async function loadDate(dateStr){
     }
   } catch(e){
     state = blankState(dateStr);
-    showToast('スプレッドシートに接続できませんでした');
+    showToast(e.name === 'AbortError' ? '通信がタイムアウトしました' : 'スプレッドシートに接続できませんでした');
   }
   render();
 }
@@ -701,8 +715,26 @@ function renderTripCard(t, no){
   return wrap;
 }
 
+/* ---------- error fallback（真っ白のまま止まらないようにする） ---------- */
+function showFatalError(msg){
+  const app = document.getElementById('app');
+  if(app){
+    app.innerHTML = `<div style="padding:24px;font-family:sans-serif;color:#7E332A;background:#FBEAE7;line-height:1.6;">
+      <b>エラーが発生しました</b><br>
+      <span style="font-size:13px;">${(msg||'').toString().replace(/</g,'&lt;')}</span><br><br>
+      <span style="font-size:12px;color:#555;">この画面のままの場合、ブラウザの開発者ツール（F12）のConsoleタブに詳細が出ています。</span>
+    </div>`;
+  }
+}
+window.addEventListener('error', e=> showFatalError(e.message));
+window.addEventListener('unhandledrejection', e=> showFatalError(e.reason));
+
 /* ---------- init ---------- */
-loadDate(todayStr());
+try{
+  loadDate(todayStr());
+}catch(e){
+  showFatalError(e.message);
+}
 </script>
 </body>
 </html>
