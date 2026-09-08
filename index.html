@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>運行日誌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F5F2EA;
+    --panel: #FFFFFF;
+    --ink: #262320;
+    --ink-soft: #6F6A61;
+    --line: #DEDACD;
+    --deep: #1F4A44;
+    --deep-ink: #123330;
+    --amber: #E3963E;
+    --amber-deep: #B96F1F;
+    --brick: #A6473C;
+    --brick-deep: #7E332A;
+    --paper-shadow: 0 1px 0 rgba(38,35,32,0.05);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg); }
+  body{
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    color:var(--ink);
+    font-variant-numeric: tabular-nums;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    padding-bottom:112px;
+    min-height:100vh;
+    background:var(--bg);
+  }
+
+  /* ---------- Header ---------- */
+  .head{
+    background:var(--deep);
+    color:#F4EFE3;
+    padding:18px 18px 20px;
+    border-radius:0 0 22px 22px;
+  }
+  .head-title{
+    font-size:13px;
+    letter-spacing:0.08em;
+    color:#B9CFC9;
+    margin:0 0 4px;
+  }
+  .head input[type=date]{
+    background:transparent;
+    border:none;
+    color:#F4EFE3;
+    font-size:20px;
+    font-weight:700;
+    font-family:inherit;
+    padding:0;
+    width:150px;
+  }
+  .driver-row{
+    display:flex;
+    gap:8px;
+    margin-top:14px;
+  }
+  .driver-field{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .driver-field label{ font-size:11px; color:#B9CFC9; white-space:nowrap; }
+  .driver-field input{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.18);
+    border-radius:10px;
+    color:#F4EFE3;
+    font-size:14.5px;
+    font-family:inherit;
+    padding:8px 10px;
+    width:100%;
+  }
+  .driver-field input::placeholder{ color:#8FA9A2; }
+
+  /* ---------- Day meter (manual odometer) ---------- */
+  .meter{
+    margin:14px 18px 0;
+    background:var(--deep-ink);
+    border-radius:18px;
+    padding:16px 18px;
+  }
+  .meter-title{ font-size:12px; color:#9FC1B9; letter-spacing:0.05em; margin-bottom:10px; }
+  .meter-inputs{ display:flex; gap:10px; align-items:flex-end; }
+  .meter-field{ flex:1; display:flex; flex-direction:column; gap:4px; }
+  .meter-field label{ font-size:11px; color:#9FC1B9; }
+  .meter-field input{
+    width:100%;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:10px;
+    color:#F4EFE3;
+    font-family:'Space Mono', monospace;
+    font-size:16px;
+    font-weight:700;
+    padding:9px 10px;
+    text-align:right;
+  }
+  .meter-result{
+    margin-top:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-top:1px solid rgba(255,255,255,0.14);
+    padding-top:10px;
+  }
+  .meter-result-label{ font-size:12px; color:#9FC1B9; }
+  .meter-result-value{
+    font-family:'Space Mono', monospace;
+    font-size:26px;
+    font-weight:700;
+    color:#F4EFE3;
+  }
+  .meter-result-value span{ font-size:14px; color:#9FC1B9; margin-left:4px; }
+  .meter-warn{ font-size:11px; color:#E3963E; margin-top:6px; }
+
+  /* ---------- Trip cards ---------- */
+  .trips{ padding:18px; display:flex; flex-direction:column; gap:14px; }
+  .trip{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px 14px 16px;
+    box-shadow:var(--paper-shadow);
+  }
+  .trip-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .trip-no{
+    display:flex; align-items:center; gap:8px;
+    font-weight:700; font-size:15px; color:var(--deep-ink);
+  }
+  .trip-no .badge{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--deep); color:#F4EFE3;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-family:'Space Mono',monospace;
+  }
+  .trip-del{
+    border:none; background:transparent; color:var(--ink-soft);
+    font-size:13px; padding:4px 6px; cursor:pointer;
+  }
+  .time-row{
+    display:flex; gap:8px; margin-bottom:10px;
+  }
+  .time-cell{
+    flex:1;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:8px 10px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .time-cell-label{ font-size:11px; color:var(--ink-soft); }
+  .time-cell-value{
+    font-family:'Space Mono', monospace;
+    font-size:18px; font-weight:700; color:var(--ink);
+    min-height:22px;
+  }
+  .time-cell button{
+    align-self:flex-start;
+    border:none; border-radius:8px;
+    padding:6px 10px; font-size:12px; font-weight:700;
+    font-family:inherit; color:#fff; background:var(--deep);
+    cursor:pointer;
+  }
+  .time-cell button.done{ background:var(--line); color:var(--ink-soft); }
+
+  .field-row{ display:flex; gap:8px; margin-bottom:8px; }
+  .field{ flex:1; display:flex; flex-direction:column; gap:4px; }
+  .field label{ font-size:11px; color:var(--ink-soft); }
+  .field input, .field textarea{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:9px 10px;
+    font-size:14.5px;
+    font-family:inherit;
+    color:var(--ink);
+    background:#FCFBF7;
+    width:100%;
+  }
+  .field textarea{ resize:none; height:38px; }
+
+  .pax-row{ display:flex; gap:10px; align-items:flex-end; margin-bottom:10px; }
+  .pax-field{ display:flex; flex-direction:column; gap:4px; }
+  .pax-field label{ font-size:11px; color:var(--ink-soft); }
+  .stepper{
+    display:flex; align-items:center; border:1px solid var(--line);
+    border-radius:10px; overflow:hidden; background:#FCFBF7;
+  }
+  .stepper button{
+    border:none; background:transparent; width:32px; height:36px;
+    font-size:17px; color:var(--deep); cursor:pointer;
+  }
+  .stepper .num{
+    width:30px; text-align:center; font-family:'Space Mono',monospace;
+    font-size:15px; font-weight:700;
+  }
+
+  .fare-box{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+    background:#FCFBF7;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .fare-box-title{ font-size:11.5px; color:var(--ink-soft); font-weight:700; }
+  .fare-grid{ display:flex; gap:8px; }
+  .fare-grid .field input{ text-align:right; font-family:'Space Mono',monospace; font-weight:700; }
+  .fare-breakdown{
+    display:flex; flex-direction:column; gap:4px;
+    font-size:12.5px; color:var(--ink-soft);
+    border-top:1px dashed var(--line);
+    padding-top:8px;
+  }
+  .fare-breakdown .row{ display:flex; justify-content:space-between; }
+  .fare-breakdown .row.total{
+    font-size:15px; font-weight:700; color:var(--deep-ink);
+    font-family:'Space Mono',monospace;
+  }
+
+  .add-trip{
+    display:flex; align-items:center; justify-content:center;
+    gap:8px;
+    padding:14px;
+    border:1.5px dashed var(--deep);
+    border-radius:14px;
+    background:transparent;
+    color:var(--deep-ink);
+    font-family:inherit; font-weight:700; font-size:14.5px;
+    cursor:pointer;
+  }
+
+  /* ---------- Summary bar ---------- */
+  .summary{
+    position:fixed; left:0; right:0; bottom:0;
+    max-width:480px; margin:0 auto;
+    background:var(--amber);
+    color:#3A2408;
+    padding:10px 18px 12px;
+    box-shadow:0 -3px 12px rgba(0,0,0,0.12);
+  }
+  .summary-row{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .summary .sum-item{ display:flex; flex-direction:column; }
+  .summary .sum-label{ font-size:10px; opacity:0.75; }
+  .summary .sum-value{ font-family:'Space Mono',monospace; font-size:15px; font-weight:700; }
+  .summary .sum-main .sum-value{ font-size:19px; }
+  .save-btn{
+    border:none; border-radius:12px; padding:10px 16px;
+    background:var(--deep-ink); color:#F4EFE3;
+    font-family:inherit; font-weight:700; font-size:13.5px;
+    cursor:pointer;
+  }
+
+  .toast{
+    position:fixed; left:50%; bottom:112px; transform:translateX(-50%);
+    background:var(--deep-ink); color:#F4EFE3;
+    padding:10px 16px; border-radius:10px; font-size:13px;
+    opacity:0; transition:opacity 0.25s; pointer-events:none;
+    max-width:90%; text-align:center; z-index:50;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxeriR7x-Yc4jVXfMp7wirM_kVjEPS811T6ck1bQwDw_vBuw6GEDJeNqpA1l5uGxJ6adQ/exec';
+let saveTimer = null;
+let isSaving = false;
+
+function todayStr(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+function nowTimeStr(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function newTrip(){
+  return { id: 'trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
+    board:null, alight:null, from:'', to:'', male:0, female:0,
+    fare:'', discountRate:'', ticketCount:'', note:'' };
+}
+function blankState(dateStr){
+  return {
+    date: dateStr,
+    driverName:'',
+    vehicleName:'',
+    odoStart:'',
+    odoEnd:'',
+    trips:[ newTrip() ]
+  };
+}
+
+let state = blankState(todayStr());
+
+function fmtKm(v){
+  if(v===null || v===undefined || isNaN(v)) return '--';
+  return v.toFixed(1);
+}
+const TICKET_VALUE = 500;
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ---------- persistence (Google スプレッドシート経由) ---------- */
+function buildPayload(){
+  return {
+    date: state.date,
+    driverName: state.driverName || '',
+    vehicleName: state.vehicleName || '',
+    odoStart: state.odoStart,
+    odoEnd: state.odoEnd,
+    trips: state.trips.map(t=>{
+      const c = calcTrip(t);
+      return {
+        board: t.board || '', alight: t.alight || '',
+        from: t.from || '', to: t.to || '',
+        male: Number(t.male)||0, female: Number(t.female)||0,
+        fare: c.fare, discountRate: Number(t.discountRate)||0, ticketCount: Number(t.ticketCount)||0,
+        discountAmt: c.discountAmt, ticketAmt: c.ticketAmt, cashDue: c.cashDue,
+        note: t.note || ''
+      };
+    })
+  };
+}
+
+async function sendSave(){
+  const res = await fetch(SHEET_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // プリフライトを避けるためtext/plainで送る
+    body: JSON.stringify(buildPayload())
+  });
+  const data = await res.json();
+  return !!(data && data.ok);
+}
+
+async function loadDate(dateStr){
+  showToast('読み込み中…');
+  try{
+    const res = await fetch(`${SHEET_API_URL}?date=${encodeURIComponent(dateStr)}`);
+    const data = await res.json();
+    if(data && data.ok && data.exists){
+      const trips = (data.trips && data.trips.length>0)
+        ? data.trips.map((r, idx)=>({
+            id: 'trip-'+Date.now()+'-'+idx+'-'+Math.random().toString(36).slice(2,7),
+            board: r.board || null,
+            alight: r.alight || null,
+            from: r.from || '',
+            to: r.to || '',
+            male: Number(r.male)||0,
+            female: Number(r.female)||0,
+            fare: r.fare === 0 ? 0 : (r.fare || ''),
+            discountRate: r.discountRate === 0 ? '' : (r.discountRate || ''),
+            ticketCount: r.ticketCount === 0 ? '' : (r.ticketCount || ''),
+            note: r.note || ''
+          }))
+        : [newTrip()];
+      state = {
+        date: dateStr,
+        driverName: data.driverName || '',
+        vehicleName: data.vehicleName || '',
+        odoStart: (data.odoStart===''||data.odoStart==null) ? '' : String(data.odoStart),
+        odoEnd: (data.odoEnd===''||data.odoEnd==null) ? '' : String(data.odoEnd),
+        trips
+      };
+    } else {
+      state = blankState(dateStr);
+    }
+  } catch(e){
+    state = blankState(dateStr);
+    showToast('スプレッドシートに接続できませんでした');
+  }
+  render();
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{
+      const ok = await sendSave();
+      if(!ok) showToast('保存に失敗しました');
+    } catch(e){
+      showToast('保存に失敗しました（通信エラー）');
+    }
+  }, 900);
+}
+async function manualSave(){
+  try{
+    const ok = await sendSave();
+    showToast(ok ? 'スプレッドシートに保存しました' : '保存に失敗しました');
+  } catch(e){
+    showToast('保存に失敗しました（通信エラー）');
+  }
+}
+
+/* ---------- trip actions ---------- */
+function addTrip(){
+  state.trips.push(newTrip());
+  render(); scheduleSave();
+}
+function removeTrip(id){
+  if(state.trips.length===1){ showToast('最後の1件は削除できません'); return; }
+  state.trips = state.trips.filter(t=>t.id!==id);
+  render(); scheduleSave();
+}
+function markBoard(id){
+  const t = state.trips.find(t=>t.id===id);
+  t.board = nowTimeStr();
+  render(); scheduleSave();
+}
+function markAlight(id){
+  const t = state.trips.find(t=>t.id===id);
+  t.alight = nowTimeStr();
+  render(); scheduleSave();
+}
+function updateField(id, key, value){
+  const t = state.trips.find(t=>t.id===id);
+  t[key] = value;
+  renderTotalsOnly();
+  updateTripBreakdown(id);
+  scheduleSave();
+}
+function bumpPax(id, key, delta){
+  const t = state.trips.find(t=>t.id===id);
+  t[key] = Math.max(0, (t[key]||0) + delta);
+  render(); scheduleSave();
+}
+function updateHead(key, value){
+  state[key] = value;
+  scheduleSave();
+  if(key==='odoStart' || key==='odoEnd') updateOdoResult();
+}
+
+/* ---------- calculations ---------- */
+function calcTrip(t){
+  const fare = Number(t.fare)||0;
+  const rate = Number(t.discountRate)||0;
+  const tickets = Number(t.ticketCount)||0;
+  const discountAmt = Math.round(fare * (rate/100));
+  const afterDiscount = Math.max(0, fare - discountAmt);
+  const ticketAmt = tickets * TICKET_VALUE;
+  const cashDue = Math.max(0, afterDiscount - ticketAmt);
+  return { fare, discountAmt, afterDiscount, ticketAmt, cashDue };
+}
+function totals(){
+  let male=0, female=0, fareSum=0, discountSum=0, ticketSum=0, cashSum=0;
+  state.trips.forEach(t=>{
+    male += Number(t.male)||0;
+    female += Number(t.female)||0;
+    const c = calcTrip(t);
+    fareSum += c.fare;
+    discountSum += c.discountAmt;
+    ticketSum += c.ticketAmt;
+    cashSum += c.cashDue;
+  });
+  return { male, female, total: male+female, fareSum, discountSum, ticketSum, cashSum };
+}
+
+/* ---------- partial renders ---------- */
+function updateOdoResult(){
+  const start = state.odoStart === '' ? null : Number(state.odoStart);
+  const end = state.odoEnd === '' ? null : Number(state.odoEnd);
+  const el = document.getElementById('odo-result-value');
+  const warnEl = document.getElementById('odo-warn');
+  if(start===null || end===null){
+    el.innerHTML = `--<span>km</span>`;
+    warnEl.textContent = '';
+    return;
+  }
+  const dist = end - start;
+  if(dist < 0){
+    el.innerHTML = `--<span>km</span>`;
+    warnEl.textContent = '帰着メーターが出発メーターより小さくなっています';
+  } else {
+    el.innerHTML = `${fmtKm(dist)}<span>km</span>`;
+    warnEl.textContent = '';
+  }
+}
+function updateTripBreakdown(id){
+  const t = state.trips.find(t=>t.id===id);
+  const c = calcTrip(t);
+  const box = document.querySelector(`.fare-breakdown[data-id="${id}"]`);
+  if(!box) return;
+  box.innerHTML = `
+    <div class="row"><span>割引額（${Number(t.discountRate)||0}%）</span><span>-¥${c.discountAmt.toLocaleString()}</span></div>
+    <div class="row"><span>タクシー券（${Number(t.ticketCount)||0}枚）</span><span>-¥${c.ticketAmt.toLocaleString()}</span></div>
+    <div class="row total"><span>現金受取額</span><span>¥${c.cashDue.toLocaleString()}</span></div>
+  `;
+}
+function renderTotalsOnly(){
+  const t = totals();
+  const el = document.getElementById('summary-body');
+  if(!el) return;
+  el.innerHTML = summaryHTML(t);
+}
+function summaryHTML(t){
+  return `
+    <div class="sum-item">
+      <span class="sum-label">乗車人員（男/女/計）</span>
+      <span class="sum-value">${t.male} / ${t.female} / ${t.total}</span>
+    </div>
+    <div class="sum-item">
+      <span class="sum-label">割引・券合計</span>
+      <span class="sum-value">-¥${(t.discountSum+t.ticketSum).toLocaleString()}</span>
+    </div>
+    <div class="sum-item sum-main">
+      <span class="sum-label">現金回収合計</span>
+      <span class="sum-value">¥${t.cashSum.toLocaleString()}</span>
+    </div>
+  `;
+}
+
+/* ---------- full render ---------- */
+function render(){
+  const app = document.getElementById('app');
+  const t = totals();
+
+  app.innerHTML = `
+    <div class="head">
+      <p class="head-title">介護タクシー運行日誌</p>
+      <input type="date" id="date-input" value="${state.date}">
+      <div class="driver-row">
+        <div class="driver-field">
+          <label>運転者名</label>
+          <input id="driver-input" type="text" placeholder="氏名を入力" value="${escapeAttr(state.driverName)}">
+        </div>
+        <div class="driver-field">
+          <label>車種</label>
+          <input id="vehicle-input" type="text" placeholder="例：〇〇 ナンバー1234" value="${escapeAttr(state.vehicleName)}">
+        </div>
+      </div>
+    </div>
+
+    <div class="meter">
+      <div class="meter-title">本日の走行距離（車のメーターを見て入力）</div>
+      <div class="meter-inputs">
+        <div class="meter-field">
+          <label>出発時メーター (km)</label>
+          <input type="number" inputmode="decimal" id="odo-start" value="${state.odoStart}" placeholder="0">
+        </div>
+        <div class="meter-field">
+          <label>帰着時メーター (km)</label>
+          <input type="number" inputmode="decimal" id="odo-end" value="${state.odoEnd}" placeholder="0">
+        </div>
+      </div>
+      <div class="meter-result">
+        <span class="meter-result-label">走行距離</span>
+        <span class="meter-result-value" id="odo-result-value"></span>
+      </div>
+      <div class="meter-warn" id="odo-warn"></div>
+    </div>
+
+    <div class="trips" id="trips"></div>
+
+    <button class="add-trip" id="add-trip-btn">＋ 乗務を追加</button>
+
+    <div style="height:14px"></div>
+
+    <div class="summary">
+      <div class="summary-row" id="summary-body">
+        ${summaryHTML(t)}
+      </div>
+      <div class="summary-row" style="margin-top:8px; justify-content:flex-end;">
+        <button class="save-btn" id="save-btn">保存</button>
+      </div>
+    </div>
+  `;
+
+  const tripsEl = document.getElementById('trips');
+  state.trips.forEach((tr, idx)=>{
+    tripsEl.appendChild(renderTripCard(tr, idx+1));
+  });
+
+  document.getElementById('date-input').addEventListener('change', e=>{
+    loadDate(e.target.value);
+  });
+  document.getElementById('driver-input').addEventListener('input', e=> updateHead('driverName', e.target.value));
+  document.getElementById('vehicle-input').addEventListener('input', e=> updateHead('vehicleName', e.target.value));
+  document.getElementById('odo-start').addEventListener('input', e=> updateHead('odoStart', e.target.value));
+  document.getElementById('odo-end').addEventListener('input', e=> updateHead('odoEnd', e.target.value));
+  document.getElementById('add-trip-btn').addEventListener('click', addTrip);
+  document.getElementById('save-btn').addEventListener('click', manualSave);
+
+  updateOdoResult();
+}
+
+function escapeAttr(s){
+  return (s||'').replace(/"/g,'&quot;');
+}
+
+function renderTripCard(t, no){
+  const wrap = document.createElement('div');
+  wrap.className = 'trip';
+  const c = calcTrip(t);
+  wrap.innerHTML = `
+    <div class="trip-head">
+      <div class="trip-no"><span class="badge">${no}</span>乗務記録</div>
+      <button class="trip-del" data-id="${t.id}">削除</button>
+    </div>
+    <div class="time-row">
+      <div class="time-cell">
+        <span class="time-cell-label">乗車時間</span>
+        <span class="time-cell-value">${t.board || '--:--'}</span>
+        <button data-act="board" data-id="${t.id}" class="${t.board ? 'done':''}">${t.board ? '記録済み' : '乗車を記録'}</button>
+      </div>
+      <div class="time-cell">
+        <span class="time-cell-label">降車時間</span>
+        <span class="time-cell-value">${t.alight || '--:--'}</span>
+        <button data-act="alight" data-id="${t.id}" class="${t.alight ? 'done':''}">${t.alight ? '記録済み' : '降車を記録'}</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>乗車地</label>
+        <input type="text" data-key="from" data-id="${t.id}" value="${escapeAttr(t.from)}" placeholder="例：〇〇様宅">
+      </div>
+      <div class="field">
+        <label>降車地</label>
+        <input type="text" data-key="to" data-id="${t.id}" value="${escapeAttr(t.to)}" placeholder="例：〇〇病院">
+      </div>
+    </div>
+    <div class="pax-row">
+      <div class="pax-field">
+        <label>男</label>
+        <div class="stepper">
+          <button data-pax="male" data-delta="-1" data-id="${t.id}">－</button>
+          <span class="num">${t.male}</span>
+          <button data-pax="male" data-delta="1" data-id="${t.id}">＋</button>
+        </div>
+      </div>
+      <div class="pax-field">
+        <label>女</label>
+        <div class="stepper">
+          <button data-pax="female" data-delta="-1" data-id="${t.id}">－</button>
+          <span class="num">${t.female}</span>
+          <button data-pax="female" data-delta="1" data-id="${t.id}">＋</button>
+        </div>
+      </div>
+    </div>
+    <div class="fare-box">
+      <div class="fare-box-title">運賃・割引・タクシー券</div>
+      <div class="fare-grid">
+        <div class="field">
+          <label>運賃（円）</label>
+          <input type="number" inputmode="numeric" data-key="fare" data-id="${t.id}" value="${t.fare}" placeholder="0">
+        </div>
+        <div class="field">
+          <label>割引率（%）</label>
+          <input type="number" inputmode="numeric" data-key="discountRate" data-id="${t.id}" value="${t.discountRate}" placeholder="0">
+        </div>
+        <div class="field">
+          <label>タクシー券（枚）</label>
+          <input type="number" inputmode="numeric" data-key="ticketCount" data-id="${t.id}" value="${t.ticketCount}" placeholder="0">
+        </div>
+      </div>
+      <div class="fare-breakdown" data-id="${t.id}">
+        <div class="row"><span>割引額（${Number(t.discountRate)||0}%）</span><span>-¥${c.discountAmt.toLocaleString()}</span></div>
+        <div class="row"><span>タクシー券（${Number(t.ticketCount)||0}枚）</span><span>-¥${c.ticketAmt.toLocaleString()}</span></div>
+        <div class="row total"><span>現金受取額</span><span>¥${c.cashDue.toLocaleString()}</span></div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:8px;">
+      <label>備考</label>
+      <textarea data-key="note" data-id="${t.id}" placeholder="高速料金など">${t.note||''}</textarea>
+    </div>
+  `;
+
+  wrap.querySelector('[data-act="board"]').addEventListener('click', ()=>markBoard(t.id));
+  wrap.querySelector('[data-act="alight"]').addEventListener('click', ()=>markAlight(t.id));
+  wrap.querySelector('.trip-del').addEventListener('click', ()=>removeTrip(t.id));
+  wrap.querySelectorAll('input[data-key], textarea[data-key]').forEach(el=>{
+    el.addEventListener('input', ()=> updateField(t.id, el.dataset.key, el.value));
+  });
+  wrap.querySelectorAll('[data-pax]').forEach(btn=>{
+    btn.addEventListener('click', ()=> bumpPax(t.id, btn.dataset.pax, Number(btn.dataset.delta)));
+  });
+  return wrap;
+}
+
+/* ---------- init ---------- */
+loadDate(todayStr());
+</script>
+</body>
+</html>
