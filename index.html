@@ -40,7 +40,7 @@
     min-height:100vh;
     background:var(--bg);
   }
-
+ 
   /* ---------- Header ---------- */
   .head{
     background:var(--deep);
@@ -87,7 +87,7 @@
     width:100%;
   }
   .driver-field input::placeholder{ color:#8FA9A2; }
-
+ 
   /* ---------- Day meter (manual odometer) ---------- */
   .meter{
     margin:14px 18px 0;
@@ -128,7 +128,7 @@
   }
   .meter-result-value span{ font-size:14px; color:#9FC1B9; margin-left:4px; }
   .meter-warn{ font-size:11px; color:#E3963E; margin-top:6px; }
-
+ 
   /* ---------- Trip cards ---------- */
   .trips{ padding:18px; display:flex; flex-direction:column; gap:14px; }
   .trip{
@@ -180,7 +180,7 @@
     cursor:pointer;
   }
   .time-cell button.done{ background:var(--line); color:var(--ink-soft); }
-
+ 
   .field-row{ display:flex; gap:8px; margin-bottom:8px; }
   .field{ flex:1; display:flex; flex-direction:column; gap:4px; }
   .field label{ font-size:11px; color:var(--ink-soft); }
@@ -195,7 +195,7 @@
     width:100%;
   }
   .field textarea{ resize:none; height:38px; }
-
+ 
   .pax-row{ display:flex; gap:10px; align-items:flex-end; margin-bottom:10px; }
   .pax-field{ display:flex; flex-direction:column; gap:4px; }
   .pax-field label{ font-size:11px; color:var(--ink-soft); }
@@ -211,7 +211,7 @@
     width:30px; text-align:center; font-family:'Space Mono',monospace;
     font-size:15px; font-weight:700;
   }
-
+ 
   .fare-box{
     border:1px solid var(--line);
     border-radius:12px;
@@ -233,7 +233,7 @@
     font-size:15px; font-weight:700; color:var(--deep-ink);
     font-family:'Space Mono',monospace;
   }
-
+ 
   .add-trip{
     display:flex; align-items:center; justify-content:center;
     gap:8px;
@@ -245,7 +245,7 @@
     font-family:inherit; font-weight:700; font-size:14.5px;
     cursor:pointer;
   }
-
+ 
   /* ---------- Summary bar ---------- */
   .summary{
     position:fixed; left:0; right:0; bottom:0;
@@ -268,7 +268,7 @@
     font-family:inherit; font-weight:700; font-size:13.5px;
     cursor:pointer;
   }
-
+ 
   .toast{
     position:fixed; left:50%; bottom:112px; transform:translateX(-50%);
     background:var(--deep-ink); color:#F4EFE3;
@@ -282,12 +282,12 @@
 <body>
 <div class="app" id="app"></div>
 <div class="toast" id="toast"></div>
-
+ 
 <script>
 const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxeriR7x-Yc4jVXfMp7wirM_kVjEPS811T6ck1bQwDw_vBuw6GEDJeNqpA1l5uGxJ6adQ/exec';
 let saveTimer = null;
 let isSaving = false;
-
+ 
 function todayStr(){
   const d = new Date();
   const p = n => String(n).padStart(2,'0');
@@ -313,15 +313,15 @@ function blankState(dateStr){
     trips:[ newTrip() ]
   };
 }
-
+ 
 let state = blankState(todayStr());
-
+ 
 function fmtKm(v){
   if(v===null || v===undefined || isNaN(v)) return '--';
   return v.toFixed(1);
 }
 const TICKET_VALUE = 500;
-
+ 
 function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -329,7 +329,7 @@ function showToast(msg){
   clearTimeout(t._timer);
   t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
 }
-
+ 
 /* ---------- persistence (Google スプレッドシート経由) ---------- */
 async function fetchWithTimeout(url, options, timeoutMs){
   const controller = new AbortController();
@@ -340,7 +340,7 @@ async function fetchWithTimeout(url, options, timeoutMs){
     clearTimeout(timer);
   }
 }
-
+ 
 function buildPayload(){
   return {
     date: state.date,
@@ -361,7 +361,7 @@ function buildPayload(){
     })
   };
 }
-
+ 
 async function sendSave(){
   const res = await fetchWithTimeout(SHEET_API_URL, {
     method: 'POST',
@@ -371,7 +371,7 @@ async function sendSave(){
   const data = await res.json();
   return !!(data && data.ok);
 }
-
+ 
 async function loadDate(dateStr){
   showToast('読み込み中…');
   try{
@@ -383,20 +383,20 @@ async function loadDate(dateStr){
             id: 'trip-'+Date.now()+'-'+idx+'-'+Math.random().toString(36).slice(2,7),
             board: r.board || null,
             alight: r.alight || null,
-            from: r.from || '',
-            to: r.to || '',
+            from: (r.from===undefined || r.from===null) ? '' : String(r.from),
+            to: (r.to===undefined || r.to===null) ? '' : String(r.to),
             male: Number(r.male)||0,
             female: Number(r.female)||0,
             fare: r.fare === 0 ? 0 : (r.fare || ''),
             discountRate: r.discountRate === 0 ? '' : (r.discountRate || ''),
             ticketCount: r.ticketCount === 0 ? '' : (r.ticketCount || ''),
-            note: r.note || ''
+            note: (r.note===undefined || r.note===null) ? '' : String(r.note)
           }))
         : [newTrip()];
       state = {
         date: dateStr,
-        driverName: data.driverName || '',
-        vehicleName: data.vehicleName || '',
+        driverName: (data.driverName===undefined || data.driverName===null) ? '' : String(data.driverName),
+        vehicleName: (data.vehicleName===undefined || data.vehicleName===null) ? '' : String(data.vehicleName),
         odoStart: (data.odoStart===''||data.odoStart==null) ? '' : String(data.odoStart),
         odoEnd: (data.odoEnd===''||data.odoEnd==null) ? '' : String(data.odoEnd),
         trips
@@ -410,7 +410,7 @@ async function loadDate(dateStr){
   }
   render();
 }
-
+ 
 function scheduleSave(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async ()=>{
@@ -430,7 +430,7 @@ async function manualSave(){
     showToast('保存に失敗しました（通信エラー）');
   }
 }
-
+ 
 /* ---------- trip actions ---------- */
 function addTrip(){
   state.trips.push(newTrip());
@@ -468,7 +468,7 @@ function updateHead(key, value){
   scheduleSave();
   if(key==='odoStart' || key==='odoEnd') updateOdoResult();
 }
-
+ 
 /* ---------- calculations ---------- */
 function calcTrip(t){
   const fare = Number(t.fare)||0;
@@ -493,7 +493,7 @@ function totals(){
   });
   return { male, female, total: male+female, fareSum, discountSum, ticketSum, cashSum };
 }
-
+ 
 /* ---------- partial renders ---------- */
 function updateOdoResult(){
   const start = state.odoStart === '' ? null : Number(state.odoStart);
@@ -547,12 +547,12 @@ function summaryHTML(t){
     </div>
   `;
 }
-
+ 
 /* ---------- full render ---------- */
 function render(){
   const app = document.getElementById('app');
   const t = totals();
-
+ 
   app.innerHTML = `
     <div class="head">
       <p class="head-title">介護タクシー運行日誌</p>
@@ -568,7 +568,7 @@ function render(){
         </div>
       </div>
     </div>
-
+ 
     <div class="meter">
       <div class="meter-title">本日の走行距離（車のメーターを見て入力）</div>
       <div class="meter-inputs">
@@ -587,13 +587,13 @@ function render(){
       </div>
       <div class="meter-warn" id="odo-warn"></div>
     </div>
-
+ 
     <div class="trips" id="trips"></div>
-
+ 
     <button class="add-trip" id="add-trip-btn">＋ 乗務を追加</button>
-
+ 
     <div style="height:14px"></div>
-
+ 
     <div class="summary">
       <div class="summary-row" id="summary-body">
         ${summaryHTML(t)}
@@ -603,12 +603,12 @@ function render(){
       </div>
     </div>
   `;
-
+ 
   const tripsEl = document.getElementById('trips');
   state.trips.forEach((tr, idx)=>{
     tripsEl.appendChild(renderTripCard(tr, idx+1));
   });
-
+ 
   document.getElementById('date-input').addEventListener('change', e=>{
     loadDate(e.target.value);
   });
@@ -618,14 +618,14 @@ function render(){
   document.getElementById('odo-end').addEventListener('input', e=> updateHead('odoEnd', e.target.value));
   document.getElementById('add-trip-btn').addEventListener('click', addTrip);
   document.getElementById('save-btn').addEventListener('click', manualSave);
-
+ 
   updateOdoResult();
 }
-
+ 
 function escapeAttr(s){
-  return (s||'').replace(/"/g,'&quot;');
+  return String(s===undefined || s===null ? '' : s).replace(/"/g,'&quot;');
 }
-
+ 
 function renderTripCard(t, no){
   const wrap = document.createElement('div');
   wrap.className = 'trip';
@@ -702,7 +702,7 @@ function renderTripCard(t, no){
       <textarea data-key="note" data-id="${t.id}" placeholder="高速料金など">${t.note||''}</textarea>
     </div>
   `;
-
+ 
   wrap.querySelector('[data-act="board"]').addEventListener('click', ()=>markBoard(t.id));
   wrap.querySelector('[data-act="alight"]').addEventListener('click', ()=>markAlight(t.id));
   wrap.querySelector('.trip-del').addEventListener('click', ()=>removeTrip(t.id));
@@ -714,7 +714,7 @@ function renderTripCard(t, no){
   });
   return wrap;
 }
-
+ 
 /* ---------- error fallback（真っ白のまま止まらないようにする） ---------- */
 function showFatalError(msg){
   const app = document.getElementById('app');
@@ -728,7 +728,7 @@ function showFatalError(msg){
 }
 window.addEventListener('error', e=> showFatalError(e.message));
 window.addEventListener('unhandledrejection', e=> showFatalError(e.reason));
-
+ 
 /* ---------- init ---------- */
 try{
   loadDate(todayStr());
