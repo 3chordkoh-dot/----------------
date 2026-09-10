@@ -88,49 +88,15 @@
   }
   .driver-field input::placeholder{ color:#8FA9A2; }
  
-  /* ---------- Day meter (manual odometer) ---------- */
-  .meter{
-    margin:14px 18px 0;
-    background:var(--deep-ink);
-    border-radius:18px;
-    padding:16px 18px;
-  }
-  .meter-title{ font-size:12px; color:#9FC1B9; letter-spacing:0.05em; margin-bottom:10px; }
-  .meter-inputs{ display:flex; gap:10px; align-items:flex-end; }
-  .meter-field{ flex:1; display:flex; flex-direction:column; gap:4px; }
-  .meter-field label{ font-size:11px; color:#9FC1B9; }
-  .meter-field input{
-    width:100%;
-    background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,255,255,0.2);
-    border-radius:10px;
-    color:#F4EFE3;
-    font-family:'Space Mono', monospace;
-    font-size:16px;
+  .section-label{
+    padding:18px 18px 0;
+    font-size:12.5px;
     font-weight:700;
-    padding:9px 10px;
-    text-align:right;
+    color:var(--deep-ink);
   }
-  .meter-result{
-    margin-top:12px;
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-    border-top:1px solid rgba(255,255,255,0.14);
-    padding-top:10px;
-  }
-  .meter-result-label{ font-size:12px; color:#9FC1B9; }
-  .meter-result-value{
-    font-family:'Space Mono', monospace;
-    font-size:26px;
-    font-weight:700;
-    color:#F4EFE3;
-  }
-  .meter-result-value span{ font-size:14px; color:#9FC1B9; margin-left:4px; }
-  .meter-warn{ font-size:11px; color:#E3963E; margin-top:6px; }
  
-  /* ---------- Trip cards ---------- */
-  .trips{ padding:18px; display:flex; flex-direction:column; gap:14px; }
+  /* ---------- Cards (trips & vehicles share this look) ---------- */
+  .trips{ padding:10px 18px 18px; display:flex; flex-direction:column; gap:14px; }
   .trip{
     background:var(--panel);
     border:1px solid var(--line);
@@ -141,6 +107,7 @@
   .trip-head{
     display:flex; align-items:center; justify-content:space-between;
     margin-bottom:10px;
+    cursor:pointer;
   }
   .trip-no{
     display:flex; align-items:center; gap:8px;
@@ -151,7 +118,9 @@
     background:var(--deep); color:#F4EFE3;
     display:flex; align-items:center; justify-content:center;
     font-size:13px; font-family:'Space Mono',monospace;
+    flex-shrink:0;
   }
+  .trip-no .hint{ font-size:11px; color:var(--ink-soft); font-weight:400; }
   .trip-del{
     border:none; background:transparent; color:var(--ink-soft);
     font-size:13px; padding:4px 6px; cursor:pointer;
@@ -234,9 +203,64 @@
     font-family:'Space Mono',monospace;
   }
  
+  .mini-fields{ display:flex; gap:8px; margin-top:8px; }
+  .mini-field{ flex:1; display:flex; flex-direction:column; gap:4px; }
+  .mini-field label{ font-size:11px; color:var(--ink-soft); }
+  .mini-field input{
+    border:1px solid var(--line); border-radius:10px; padding:8px 9px;
+    font-size:14px; font-family:'Space Mono',monospace; font-weight:700;
+    text-align:right; width:100%; background:#FCFBF7; color:var(--ink);
+  }
+  .dist-display{
+    border:1px solid var(--line); border-radius:10px; padding:8px 9px;
+    font-family:'Space Mono',monospace; font-weight:700; text-align:right;
+    background:#F0EEE6; color:var(--deep-ink); font-size:14px;
+  }
+  .meter-warn{ font-size:11px; color:var(--brick); margin-top:6px; }
+ 
+  .vehicle-total-bar{
+    margin:0 18px 4px;
+    background:var(--deep-ink);
+    border-radius:14px;
+    padding:12px 16px;
+    display:flex; justify-content:space-between; align-items:baseline;
+  }
+  .vehicle-total-bar .label{ font-size:12px; color:#9FC1B9; }
+  .vehicle-total-bar .value{ font-family:'Space Mono',monospace; font-size:22px; font-weight:700; color:#F4EFE3; }
+  .vehicle-total-bar .value span{ font-size:13px; color:#9FC1B9; margin-left:4px; }
+ 
+  /* ---------- Collapsed trip summary ---------- */
+  .trip-summary{
+    display:flex; align-items:center; gap:10px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px 12px;
+    cursor:pointer;
+  }
+  .trip-summary-badge{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--line); color:var(--deep-ink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-family:'Space Mono',monospace; font-weight:700;
+    flex-shrink:0;
+  }
+  .trip-summary-body{ flex:1; min-width:0; }
+  .trip-summary-route{
+    font-size:14px; font-weight:700; color:var(--ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .trip-summary-meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .trip-summary-del{
+    border:none; background:transparent; color:var(--ink-soft);
+    font-size:12px; padding:4px 6px; cursor:pointer; flex-shrink:0;
+  }
+ 
   .add-trip{
     display:flex; align-items:center; justify-content:center;
     gap:8px;
+    width:calc(100% - 36px);
+    margin:0 18px;
     padding:14px;
     border:1.5px dashed var(--deep);
     border-radius:14px;
@@ -286,7 +310,6 @@
 <script>
 const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxeriR7x-Yc4jVXfMp7wirM_kVjEPS811T6ck1bQwDw_vBuw6GEDJeNqpA1l5uGxJ6adQ/exec';
 let saveTimer = null;
-let isSaving = false;
  
 function todayStr(){
   const d = new Date();
@@ -303,14 +326,18 @@ function newTrip(){
     board:null, alight:null, from:'', to:'', male:0, female:0,
     fare:'', discountRate:'', ticketCount:'', note:'' };
 }
+function newVehicle(){
+  return { id: 'veh-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
+    name:'', odoStart:'', odoEnd:'' };
+}
 function blankState(dateStr){
+  const t = newTrip();
   return {
     date: dateStr,
     driverName:'',
-    vehicleName:'',
-    odoStart:'',
-    odoEnd:'',
-    trips:[ newTrip() ]
+    vehicles:[ newVehicle() ],
+    trips:[ t ],
+    activeTripId: t.id
   };
 }
  
@@ -330,7 +357,83 @@ function showToast(msg){
   t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
 }
  
-/* ---------- persistence (Google スプレッドシート経由) ---------- */
+/* ---------- error fallback（真っ白のまま止まらないようにする） ---------- */
+function showFatalError(msg){
+  const app = document.getElementById('app');
+  if(app){
+    app.innerHTML = `<div style="padding:24px;font-family:sans-serif;color:#7E332A;background:#FBEAE7;line-height:1.6;">
+      <b>エラーが発生しました</b><br>
+      <span style="font-size:13px;">${(msg||'').toString().replace(/</g,'&lt;')}</span><br><br>
+      <span style="font-size:12px;color:#555;">この画面のままの場合、ブラウザの開発者ツール（F12）のConsoleタブに詳細が出ています。</span>
+    </div>`;
+  }
+}
+window.addEventListener('error', e=> showFatalError(e.message));
+window.addEventListener('unhandledrejection', e=> showFatalError(e.reason));
+ 
+/* ---------- persistence ----------
+   開発・テスト中はスプレッドシート連携を停止し、CSV書き出しのみにしています。
+   仕様が固まったら、下の「完成後に復活させるコード」を戻してください。
+------------------------------------------------------------------ */
+function scheduleSave(){ /* テスト中は何もしない（CSVで都度書き出してください） */ }
+ 
+function loadDate(dateStr){
+  state = blankState(dateStr);
+  render();
+}
+ 
+/* ---------- CSV書き出し ---------- */
+function csvField(v){
+  const s = (v===null || v===undefined) ? '' : String(v);
+  return '"' + s.replace(/"/g,'""') + '"';
+}
+function csvRow(arr){ return arr.map(csvField).join(',') + '\r\n'; }
+ 
+function buildCSV(){
+  let out = '';
+  out += csvRow(['日付', state.date]);
+  out += csvRow(['運転者名', state.driverName]);
+  out += '\r\n';
+  out += csvRow(['車種','出発メーター','帰着メーター','走行距離(km)']);
+  state.vehicles.forEach(v=>{
+    const d = calcVehicleDist(v);
+    out += csvRow([v.name, v.odoStart, v.odoEnd, d===null ? '' : d]);
+  });
+  const vt = vehicleTotalDist();
+  out += csvRow(['合計走行距離(km)', vt===null ? '' : vt]);
+  out += '\r\n';
+  out += csvRow(['回数','乗車時間','降車時間','乗車地','降車地','男','女',
+    '運賃','割引率(%)','タクシー券(枚)','割引額','タクシー券金額','現金受取額','備考']);
+  state.trips.forEach((t, idx)=>{
+    const c = calcTrip(t);
+    out += csvRow([idx+1, t.board||'', t.alight||'', t.from||'', t.to||'',
+      t.male||0, t.female||0, c.fare, Number(t.discountRate)||0, Number(t.ticketCount)||0,
+      c.discountAmt, c.ticketAmt, c.cashDue, t.note||'']);
+  });
+  const tot = totals();
+  out += '\r\n';
+  out += csvRow(['合計人員(男/女/計)', `${tot.male}/${tot.female}/${tot.total}`]);
+  out += csvRow(['現金回収合計', tot.cashSum]);
+  return out;
+}
+ 
+function downloadCSV(){
+  const csv = buildCSV();
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // 先頭のBOMはExcelで文字化けしないようにするため
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `運行日誌_${state.date}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSVを書き出しました');
+}
+ 
+/* ---------- 完成後に復活させるコード（スプレッドシート連携） ----------
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxeriR7x-Yc4jVXfMp7wirM_kVjEPS811T6ck1bQwDw_vBuw6GEDJeNqpA1l5uGxJ6adQ/exec';
+ 
 async function fetchWithTimeout(url, options, timeoutMs){
   const controller = new AbortController();
   const timer = setTimeout(()=> controller.abort(), timeoutMs || 10000);
@@ -345,9 +448,7 @@ function buildPayload(){
   return {
     date: state.date,
     driverName: state.driverName || '',
-    vehicleName: state.vehicleName || '',
-    odoStart: state.odoStart,
-    odoEnd: state.odoEnd,
+    vehicles: state.vehicles.map(v=>({ name: v.name || '', odoStart: v.odoStart, odoEnd: v.odoEnd })),
     trips: state.trips.map(t=>{
       const c = calcTrip(t);
       return {
@@ -365,41 +466,40 @@ function buildPayload(){
 async function sendSave(){
   const res = await fetchWithTimeout(SHEET_API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // プリフライトを避けるためtext/plainで送る
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(buildPayload())
   }, 10000);
   const data = await res.json();
   return !!(data && data.ok);
 }
  
-async function loadDate(dateStr){
+async function loadDateFromSheet(dateStr){
   showToast('読み込み中…');
   try{
     const res = await fetchWithTimeout(`${SHEET_API_URL}?date=${encodeURIComponent(dateStr)}`, {}, 10000);
     const data = await res.json();
     if(data && data.ok && data.exists){
-      const trips = (data.trips && data.trips.length>0)
-        ? data.trips.map((r, idx)=>({
-            id: 'trip-'+Date.now()+'-'+idx+'-'+Math.random().toString(36).slice(2,7),
-            board: r.board || null,
-            alight: r.alight || null,
-            from: (r.from===undefined || r.from===null) ? '' : String(r.from),
-            to: (r.to===undefined || r.to===null) ? '' : String(r.to),
-            male: Number(r.male)||0,
-            female: Number(r.female)||0,
-            fare: r.fare === 0 ? 0 : (r.fare || ''),
-            discountRate: r.discountRate === 0 ? '' : (r.discountRate || ''),
-            ticketCount: r.ticketCount === 0 ? '' : (r.ticketCount || ''),
-            note: (r.note===undefined || r.note===null) ? '' : String(r.note)
-          }))
-        : [newTrip()];
+      const hadTrips = data.trips && data.trips.length>0;
+      const trips = hadTrips ? data.trips.map((r, idx)=>({
+        id: 'trip-'+Date.now()+'-'+idx+'-'+Math.random().toString(36).slice(2,7),
+        board: r.board || null, alight: r.alight || null,
+        from: (r.from==null) ? '' : String(r.from), to: (r.to==null) ? '' : String(r.to),
+        male: Number(r.male)||0, female: Number(r.female)||0,
+        fare: r.fare === 0 ? 0 : (r.fare || ''),
+        discountRate: r.discountRate === 0 ? '' : (r.discountRate || ''),
+        ticketCount: r.ticketCount === 0 ? '' : (r.ticketCount || ''),
+        note: (r.note==null) ? '' : String(r.note)
+      })) : [newTrip()];
+      const vehicles = (data.vehicles && data.vehicles.length>0) ? data.vehicles.map(v=>({
+        id: 'veh-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
+        name: (v.name==null) ? '' : String(v.name),
+        odoStart: (v.odoStart===''||v.odoStart==null) ? '' : String(v.odoStart),
+        odoEnd: (v.odoEnd===''||v.odoEnd==null) ? '' : String(v.odoEnd)
+      })) : [ newVehicle() ];
       state = {
         date: dateStr,
-        driverName: (data.driverName===undefined || data.driverName===null) ? '' : String(data.driverName),
-        vehicleName: (data.vehicleName===undefined || data.vehicleName===null) ? '' : String(data.vehicleName),
-        odoStart: (data.odoStart===''||data.odoStart==null) ? '' : String(data.odoStart),
-        odoEnd: (data.odoEnd===''||data.odoEnd==null) ? '' : String(data.odoEnd),
-        trips
+        driverName: (data.driverName==null) ? '' : String(data.driverName),
+        vehicles, trips, activeTripId: hadTrips ? null : trips[0].id
       };
     } else {
       state = blankState(dateStr);
@@ -411,7 +511,7 @@ async function loadDate(dateStr){
   render();
 }
  
-function scheduleSave(){
+function scheduleSaveToSheet(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async ()=>{
     try{
@@ -422,23 +522,19 @@ function scheduleSave(){
     }
   }, 900);
 }
-async function manualSave(){
-  try{
-    const ok = await sendSave();
-    showToast(ok ? 'スプレッドシートに保存しました' : '保存に失敗しました');
-  } catch(e){
-    showToast('保存に失敗しました（通信エラー）');
-  }
-}
+------------------------------------------------------------------ */
  
 /* ---------- trip actions ---------- */
 function addTrip(){
-  state.trips.push(newTrip());
+  const nt = newTrip();
+  state.trips.push(nt);
+  state.activeTripId = nt.id;
   render(); scheduleSave();
 }
 function removeTrip(id){
   if(state.trips.length===1){ showToast('最後の1件は削除できません'); return; }
   state.trips = state.trips.filter(t=>t.id!==id);
+  if(state.activeTripId === id) state.activeTripId = null;
   render(); scheduleSave();
 }
 function markBoard(id){
@@ -466,7 +562,24 @@ function bumpPax(id, key, delta){
 function updateHead(key, value){
   state[key] = value;
   scheduleSave();
-  if(key==='odoStart' || key==='odoEnd') updateOdoResult();
+}
+ 
+/* ---------- vehicle actions ---------- */
+function addVehicle(){
+  state.vehicles.push(newVehicle());
+  render(); scheduleSave();
+}
+function removeVehicle(id){
+  if(state.vehicles.length===1){ showToast('最後の1件は削除できません'); return; }
+  state.vehicles = state.vehicles.filter(v=>v.id!==id);
+  render(); scheduleSave();
+}
+function updateVehicleField(id, key, value){
+  const v = state.vehicles.find(v=>v.id===id);
+  v[key] = value;
+  updateVehicleRowDisplay(id);
+  updateVehicleTotalDisplay();
+  scheduleSave();
 }
  
 /* ---------- calculations ---------- */
@@ -493,26 +606,46 @@ function totals(){
   });
   return { male, female, total: male+female, fareSum, discountSum, ticketSum, cashSum };
 }
+function calcVehicleDist(v){
+  if(v.odoStart==='' || v.odoEnd==='' || v.odoStart==null || v.odoEnd==null) return null;
+  const s = Number(v.odoStart), e = Number(v.odoEnd);
+  if(isNaN(s) || isNaN(e)) return null;
+  const d = e - s;
+  return d >= 0 ? d : null;
+}
+function vehicleHasNegative(v){
+  if(v.odoStart==='' || v.odoEnd==='' || v.odoStart==null || v.odoEnd==null) return false;
+  const s = Number(v.odoStart), e = Number(v.odoEnd);
+  if(isNaN(s) || isNaN(e)) return false;
+  return (e - s) < 0;
+}
+function vehicleTotalDist(){
+  let total = 0, any = false;
+  state.vehicles.forEach(v=>{
+    const d = calcVehicleDist(v);
+    if(d !== null){ total += d; any = true; }
+  });
+  return any ? total : null;
+}
  
 /* ---------- partial renders ---------- */
-function updateOdoResult(){
-  const start = state.odoStart === '' ? null : Number(state.odoStart);
-  const end = state.odoEnd === '' ? null : Number(state.odoEnd);
-  const el = document.getElementById('odo-result-value');
-  const warnEl = document.getElementById('odo-warn');
-  if(start===null || end===null){
-    el.innerHTML = `--<span>km</span>`;
-    warnEl.textContent = '';
-    return;
+function updateVehicleRowDisplay(id){
+  const v = state.vehicles.find(v=>v.id===id);
+  const distEl = document.querySelector(`.veh-dist[data-id="${id}"]`);
+  const warnEl = document.querySelector(`.veh-warn[data-id="${id}"]`);
+  if(distEl){
+    const d = calcVehicleDist(v);
+    distEl.textContent = d===null ? '--' : fmtKm(d)+' km';
   }
-  const dist = end - start;
-  if(dist < 0){
-    el.innerHTML = `--<span>km</span>`;
-    warnEl.textContent = '帰着メーターが出発メーターより小さくなっています';
-  } else {
-    el.innerHTML = `${fmtKm(dist)}<span>km</span>`;
-    warnEl.textContent = '';
+  if(warnEl){
+    warnEl.textContent = vehicleHasNegative(v) ? '帰着メーターが出発メーターより小さくなっています' : '';
   }
+}
+function updateVehicleTotalDisplay(){
+  const el = document.getElementById('vehicle-total-value');
+  if(!el) return;
+  const t = vehicleTotalDist();
+  el.innerHTML = t===null ? `--<span>km</span>` : `${fmtKm(t)}<span>km</span>`;
 }
 function updateTripBreakdown(id){
   const t = state.trips.find(t=>t.id===id);
@@ -548,10 +681,18 @@ function summaryHTML(t){
   `;
 }
  
+function escapeAttr(s){
+  return String(s===undefined || s===null ? '' : s).replace(/"/g,'&quot;');
+}
+function escapeText(s){
+  return String(s===undefined || s===null ? '' : s).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+ 
 /* ---------- full render ---------- */
 function render(){
   const app = document.getElementById('app');
   const t = totals();
+  const vt = vehicleTotalDist();
  
   app.innerHTML = `
     <div class="head">
@@ -562,35 +703,22 @@ function render(){
           <label>運転者名</label>
           <input id="driver-input" type="text" placeholder="氏名を入力" value="${escapeAttr(state.driverName)}">
         </div>
-        <div class="driver-field">
-          <label>車種</label>
-          <input id="vehicle-input" type="text" placeholder="例：〇〇 ナンバー1234" value="${escapeAttr(state.vehicleName)}">
-        </div>
       </div>
     </div>
  
-    <div class="meter">
-      <div class="meter-title">本日の走行距離（車のメーターを見て入力）</div>
-      <div class="meter-inputs">
-        <div class="meter-field">
-          <label>出発時メーター (km)</label>
-          <input type="number" inputmode="decimal" id="odo-start" value="${state.odoStart}" placeholder="0">
-        </div>
-        <div class="meter-field">
-          <label>帰着時メーター (km)</label>
-          <input type="number" inputmode="decimal" id="odo-end" value="${state.odoEnd}" placeholder="0">
-        </div>
-      </div>
-      <div class="meter-result">
-        <span class="meter-result-label">走行距離</span>
-        <span class="meter-result-value" id="odo-result-value"></span>
-      </div>
-      <div class="meter-warn" id="odo-warn"></div>
+    <div class="section-label">走行区間（車を乗り換えるたびに追加）</div>
+    <div class="trips" id="vehicles"></div>
+    <button class="add-trip" id="add-vehicle-btn">＋ 車両区間を追加</button>
+ 
+    <div style="height:14px"></div>
+    <div class="vehicle-total-bar">
+      <span class="label">合計走行距離</span>
+      <span class="value" id="vehicle-total-value">${vt===null ? '--<span>km</span>' : fmtKm(vt)+'<span>km</span>'}</span>
     </div>
  
+    <div class="section-label">乗務記録</div>
     <div class="trips" id="trips"></div>
- 
-    <button class="add-trip" id="add-trip-btn">＋ 乗務を追加</button>
+    <button class="add-trip" id="add-trip-btn">＋ 次の乗務を入力</button>
  
     <div style="height:14px"></div>
  
@@ -599,31 +727,89 @@ function render(){
         ${summaryHTML(t)}
       </div>
       <div class="summary-row" style="margin-top:8px; justify-content:flex-end;">
-        <button class="save-btn" id="save-btn">保存</button>
+        <button class="save-btn" id="save-btn">CSVを書き出す</button>
       </div>
     </div>
   `;
  
+  const vehiclesEl = document.getElementById('vehicles');
+  state.vehicles.forEach((v, idx)=> vehiclesEl.appendChild(renderVehicleCard(v, idx+1)));
+ 
   const tripsEl = document.getElementById('trips');
   state.trips.forEach((tr, idx)=>{
-    tripsEl.appendChild(renderTripCard(tr, idx+1));
+    const isActive = tr.id === state.activeTripId;
+    tripsEl.appendChild(isActive ? renderTripCard(tr, idx+1) : renderTripSummary(tr, idx+1));
   });
  
   document.getElementById('date-input').addEventListener('change', e=>{
     loadDate(e.target.value);
   });
   document.getElementById('driver-input').addEventListener('input', e=> updateHead('driverName', e.target.value));
-  document.getElementById('vehicle-input').addEventListener('input', e=> updateHead('vehicleName', e.target.value));
-  document.getElementById('odo-start').addEventListener('input', e=> updateHead('odoStart', e.target.value));
-  document.getElementById('odo-end').addEventListener('input', e=> updateHead('odoEnd', e.target.value));
+  document.getElementById('add-vehicle-btn').addEventListener('click', addVehicle);
   document.getElementById('add-trip-btn').addEventListener('click', addTrip);
-  document.getElementById('save-btn').addEventListener('click', manualSave);
- 
-  updateOdoResult();
+  document.getElementById('save-btn').addEventListener('click', downloadCSV);
 }
  
-function escapeAttr(s){
-  return String(s===undefined || s===null ? '' : s).replace(/"/g,'&quot;');
+function renderVehicleCard(v, no){
+  const wrap = document.createElement('div');
+  wrap.className = 'trip';
+  const d = calcVehicleDist(v);
+  const warn = vehicleHasNegative(v) ? '帰着メーターが出発メーターより小さくなっています' : '';
+  wrap.innerHTML = `
+    <div class="trip-head" style="cursor:default;">
+      <div class="trip-no"><span class="badge">${no}</span>車両区間</div>
+      <button class="trip-del" data-vehicle-del="${v.id}">削除</button>
+    </div>
+    <div class="field">
+      <label>車種</label>
+      <input type="text" data-vkey="name" data-id="${v.id}" value="${escapeAttr(v.name)}" placeholder="例：プリウス／ナンバー1234">
+    </div>
+    <div class="mini-fields">
+      <div class="mini-field">
+        <label>出発メーター(km)</label>
+        <input type="number" inputmode="decimal" data-vkey="odoStart" data-id="${v.id}" value="${v.odoStart}">
+      </div>
+      <div class="mini-field">
+        <label>帰着メーター(km)</label>
+        <input type="number" inputmode="decimal" data-vkey="odoEnd" data-id="${v.id}" value="${v.odoEnd}">
+      </div>
+      <div class="mini-field">
+        <label>区間距離</label>
+        <div class="dist-display veh-dist" data-id="${v.id}">${d===null ? '--' : fmtKm(d)+' km'}</div>
+      </div>
+    </div>
+    <div class="meter-warn veh-warn" data-id="${v.id}">${warn}</div>
+  `;
+  wrap.querySelector('[data-vehicle-del]').addEventListener('click', ()=> removeVehicle(v.id));
+  wrap.querySelectorAll('[data-vkey]').forEach(el=>{
+    el.addEventListener('input', ()=> updateVehicleField(v.id, el.dataset.vkey, el.value));
+  });
+  return wrap;
+}
+ 
+function renderTripSummary(t, no){
+  const wrap = document.createElement('div');
+  wrap.className = 'trip-summary';
+  const c = calcTrip(t);
+  const route = (!t.from && !t.to) ? '（未入力）' : `${t.from || '?'} → ${t.to || '?'}`;
+  wrap.innerHTML = `
+    <div class="trip-summary-badge">${no}</div>
+    <div class="trip-summary-body">
+      <div class="trip-summary-route">${escapeText(route)}</div>
+      <div class="trip-summary-meta">男${t.male||0}・女${t.female||0} ｜ ¥${c.cashDue.toLocaleString()}</div>
+    </div>
+    <button class="trip-summary-del" data-id="${t.id}">削除</button>
+  `;
+  wrap.addEventListener('click', (e)=>{
+    if(e.target.closest('.trip-summary-del')) return;
+    state.activeTripId = t.id;
+    render();
+  });
+  wrap.querySelector('.trip-summary-del').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    removeTrip(t.id);
+  });
+  return wrap;
 }
  
 function renderTripCard(t, no){
@@ -632,7 +818,7 @@ function renderTripCard(t, no){
   const c = calcTrip(t);
   wrap.innerHTML = `
     <div class="trip-head">
-      <div class="trip-no"><span class="badge">${no}</span>乗務記録</div>
+      <div class="trip-no"><span class="badge">${no}</span>乗務記録 <span class="hint">（タップでたたむ）</span></div>
       <button class="trip-del" data-id="${t.id}">削除</button>
     </div>
     <div class="time-row">
@@ -699,35 +885,27 @@ function renderTripCard(t, no){
     </div>
     <div class="field" style="margin-top:8px;">
       <label>備考</label>
-      <textarea data-key="note" data-id="${t.id}" placeholder="高速料金など">${t.note||''}</textarea>
+      <textarea data-key="note" data-id="${t.id}" placeholder="高速料金など">${escapeText(t.note||'')}</textarea>
     </div>
   `;
  
-  wrap.querySelector('[data-act="board"]').addEventListener('click', ()=>markBoard(t.id));
-  wrap.querySelector('[data-act="alight"]').addEventListener('click', ()=>markAlight(t.id));
-  wrap.querySelector('.trip-del').addEventListener('click', ()=>removeTrip(t.id));
+  wrap.querySelector('.trip-head').addEventListener('click', (e)=>{
+    if(e.target.closest('.trip-del')) return;
+    state.activeTripId = null;
+    render();
+  });
+  wrap.querySelector('[data-act="board"]').addEventListener('click', (e)=>{ e.stopPropagation(); markBoard(t.id); });
+  wrap.querySelector('[data-act="alight"]').addEventListener('click', (e)=>{ e.stopPropagation(); markAlight(t.id); });
+  wrap.querySelector('.trip-del').addEventListener('click', (e)=>{ e.stopPropagation(); removeTrip(t.id); });
   wrap.querySelectorAll('input[data-key], textarea[data-key]').forEach(el=>{
     el.addEventListener('input', ()=> updateField(t.id, el.dataset.key, el.value));
+    el.addEventListener('click', e=> e.stopPropagation());
   });
   wrap.querySelectorAll('[data-pax]').forEach(btn=>{
-    btn.addEventListener('click', ()=> bumpPax(t.id, btn.dataset.pax, Number(btn.dataset.delta)));
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); bumpPax(t.id, btn.dataset.pax, Number(btn.dataset.delta)); });
   });
   return wrap;
 }
- 
-/* ---------- error fallback（真っ白のまま止まらないようにする） ---------- */
-function showFatalError(msg){
-  const app = document.getElementById('app');
-  if(app){
-    app.innerHTML = `<div style="padding:24px;font-family:sans-serif;color:#7E332A;background:#FBEAE7;line-height:1.6;">
-      <b>エラーが発生しました</b><br>
-      <span style="font-size:13px;">${(msg||'').toString().replace(/</g,'&lt;')}</span><br><br>
-      <span style="font-size:12px;color:#555;">この画面のままの場合、ブラウザの開発者ツール（F12）のConsoleタブに詳細が出ています。</span>
-    </div>`;
-  }
-}
-window.addEventListener('error', e=> showFatalError(e.message));
-window.addEventListener('unhandledrejection', e=> showFatalError(e.reason));
  
 /* ---------- init ---------- */
 try{
