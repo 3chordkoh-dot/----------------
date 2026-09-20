@@ -527,22 +527,37 @@ function normalizeLoadedState(raw, dateStr){
   };
 }
  
-async function loadDate(dateStr){
+async function loadDate(dateStr, driverName){
+  const dn = driverName !== undefined ? driverName : state.driverName;
   showToast('読み込み中…');
   try{
-    const res = await fetchWithTimeout(`${SHEET_API_URL}?date=${encodeURIComponent(dateStr)}`, {}, 25000);
+    const res = await fetchWithTimeout(
+      `${SHEET_API_URL}?date=${encodeURIComponent(dateStr)}&driver=${encodeURIComponent(dn||'')}`, {}, 25000);
     const data = await res.json();
     if(data && data.ok && data.exists && data.raw){
       state = normalizeLoadedState(data.raw, dateStr);
     } else {
       state = blankState(dateStr);
+      state.driverName = dn || '';
     }
   } catch(e){
     state = blankState(dateStr);
+    state.driverName = dn || '';
     showToast(e.name === 'AbortError' ? '通信がタイムアウトしました' : 'スプレッドシートに接続できませんでした');
   }
   dirty = false;
   render();
+}
+ 
+/* 日付・運転者名は「誰のどの日の記録か」を決めるキーなので、
+   未保存の内容がある状態で切り替える時は確認してから読み込み直す */
+function switchRecord(dateStr, driverName){
+  if(dateStr === state.date && driverName === state.driverName) return;
+  if(dirty){
+    const ok = confirm('保存されていない入力内容があります。破棄して切り替えますか？');
+    if(!ok){ render(); return; } // 表示を元の値に戻す
+  }
+  loadDate(dateStr, driverName);
 }
  
 function scheduleSave(){
@@ -1077,9 +1092,12 @@ function render(){
   });
  
   document.getElementById('date-input').addEventListener('change', e=>{
-    loadDate(e.target.value);
+    switchRecord(e.target.value, state.driverName);
   });
   document.getElementById('driver-input').addEventListener('input', e=> updateHead('driverName', e.target.value));
+  document.getElementById('driver-input').addEventListener('change', e=>{
+    switchRecord(state.date, e.target.value);
+  });
   document.getElementById('add-trip-btn').addEventListener('click', addTrip);
   document.getElementById('save-btn').addEventListener('click', manualSave);
   document.getElementById('csv-btn').addEventListener('click', downloadCSV);
