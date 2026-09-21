@@ -335,6 +335,30 @@
     max-width:90%; text-align:center; z-index:50;
   }
   .toast.show{ opacity:1; }
+ 
+  /* ---------- ロック画面 ---------- */
+  .lock-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--bg); padding:24px;
+  }
+  .lock-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    padding:32px 24px; width:100%; max-width:280px; text-align:center;
+    box-shadow:var(--paper-shadow);
+  }
+  .lock-title{ font-weight:700; font-size:15px; color:var(--deep-ink); margin-bottom:4px; }
+  .lock-sub{ font-size:12px; color:var(--ink-soft); margin-bottom:16px; }
+  .lock-box input{
+    width:100%; border:1px solid var(--line); border-radius:10px;
+    padding:12px; font-size:22px; text-align:center; letter-spacing:0.2em;
+    font-family:'Space Mono',monospace; margin-bottom:12px;
+    background:#FFF7F8; color:var(--ink); box-sizing:border-box;
+  }
+  .lock-box button{
+    width:100%; border:none; border-radius:12px; padding:12px;
+    background:var(--deep); color:#FCEEF1; font-weight:700; font-size:15px; cursor:pointer;
+  }
+  .lock-error{ color:#8E2F45; font-size:12px; margin-top:10px; min-height:16px; }
 </style>
 </head>
 <body>
@@ -381,7 +405,7 @@ function newTrip(){
   return { id: 'trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
     board:null, alight:null, from:'', to:'', male:0, female:0,
     fare:'', fareManual:false, assistanceCount:0, discountRate:'', ticketCount:'',
-    wheelchair:'', equipmentQty: emptyEquipmentQty(), nurse:'', nightRate:'', highwayFee:'', note:'' };
+    wheelchair:'', equipmentQty: emptyEquipmentQty(), nurse:'', nightRate:'', highwayFee:'', receiptName:'', note:'' };
 }
 const VEHICLE_NAME_OPTIONS = [
   'NBOX（群馬580り226）',
@@ -484,7 +508,7 @@ function buildPayload(){
         nurse: t.nurse==='yes' ? 'あり' : 'なし', nurseFee: c.nurseFee,
         nightRate: t.nightRate==='yes' ? 'あり' : 'なし', nightSurcharge: c.nightSurcharge,
         revenueAmount: c.revenueAmount, highwayFee: c.highwayFee, cashDue: c.cashDue,
-        note: t.note||''
+        receiptName: t.receiptName||'', note: t.note||''
       };
     }),
     totals: {
@@ -639,16 +663,16 @@ function fmtDateJp(dateStr){
 function buildTemplateSection(){
   let out = '';
   out += csvRow([`${fmtDateJp(state.date)}　運転日報（乗務記録）`, '', '', '', '', '', '運転者名', state.driverName || '']);
-  out += csvRow(['回数','乗降時間','乗車地','降車地','乗車人員','運賃・料金(現金)','タクシーチケット','高速料金その他','備考']);
+  out += csvRow(['回数','領収書名','乗降時間','乗車地','降車地','乗車人員','運賃・料金(現金)','タクシーチケット','高速料金その他','備考']);
   state.trips.forEach((t, idx)=>{
     const c = calcTrip(t);
-    out += csvRow([idx+1, t.board||'', t.from||'', t.to||'', '男 '+(t.male||0),
+    out += csvRow([idx+1, t.receiptName||'', t.board||'', t.from||'', t.to||'', '男 '+(t.male||0),
       c.revenueAmount, c.ticketAmt, c.highwayFee, t.note||'']);
-    out += csvRow(['', t.alight||'', '', '', '女 '+(t.female||0), '', '', '', '']);
+    out += csvRow(['', '', t.alight||'', '', '', '女 '+(t.female||0), '', '', '', '']);
   });
   const tot = totals();
   out += '\r\n';
-  out += csvRow(['','','','','合計人数', tot.total, '合計額', tot.revenueSum]);
+  out += csvRow(['','','','','','合計人数', tot.total, '合計額', tot.revenueSum]);
   out += '\r\n';
  
   const vehicleRows = state.vehicleLog.concat(
@@ -683,7 +707,7 @@ function buildDetailSection(){
   const vt = vehicleTotalDist();
   out += csvRow(['合計走行距離(km)', vt===null ? '' : vt]);
   out += '\r\n';
-  out += csvRow(['回数','乗車時間','降車時間','乗車地','降車地','男','女',
+  out += csvRow(['回数','領収書名','乗車時間','降車時間','乗車地','降車地','男','女',
     '運賃','割引率(%)','割引額','タクシー券(枚)','タクシー券金額','運賃(差引後)',
     '介助料(回)','介助料金額','貸出車椅子','車椅子料金',
     ...EQUIPMENT_ITEMS.map(it=>`${it.label}(${it.unit})`),'備品料金合計',
@@ -692,7 +716,7 @@ function buildDetailSection(){
   state.trips.forEach((t, idx)=>{
     const c = calcTrip(t);
     const qty = t.equipmentQty || emptyEquipmentQty();
-    out += csvRow([idx+1, t.board||'', t.alight||'', t.from||'', t.to||'',
+    out += csvRow([idx+1, t.receiptName||'', t.board||'', t.alight||'', t.from||'', t.to||'',
       t.male||0, t.female||0, c.fare, Number(t.discountRate)||0, c.discountAmt,
       Number(t.ticketCount)||0, c.ticketAmt, c.fareNet,
       Number(t.assistanceCount)||0, c.assistanceFee,
@@ -1346,6 +1370,10 @@ function renderTripCard(t, no){
       <label>備考</label>
       <textarea data-key="note" data-id="${t.id}" placeholder="高速料金など">${escapeText(t.note||'')}</textarea>
     </div>
+    <div class="field" style="margin-top:8px;">
+      <label>領収書名</label>
+      <input type="text" data-key="receiptName" data-id="${t.id}" value="${escapeAttr(t.receiptName||'')}" placeholder="例：〇〇様">
+    </div>
   `;
  
   wrap.querySelector('.trip-head').addEventListener('click', (e)=>{
@@ -1374,12 +1402,44 @@ function renderTripCard(t, no){
   return wrap;
 }
  
+/* ---------- ロック画面 ---------- */
+const APP_PIN = '134679'; // ここを好きな番号に変更してください
+ 
+function renderLockScreen(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="lock-screen">
+      <div class="lock-box">
+        <div class="lock-title">介護タクシー運行日誌</div>
+        <div class="lock-sub">ロック番号を入力してください</div>
+        <input type="password" inputmode="numeric" id="lock-input" maxlength="12" placeholder="番号を入力">
+        <button id="lock-btn">開く</button>
+        <div class="lock-error" id="lock-error"></div>
+      </div>
+    </div>
+  `;
+  const input = document.getElementById('lock-input');
+  const tryUnlock = ()=>{
+    if(input.value === APP_PIN){
+      try{ loadDate(todayStr()); }catch(e){ showFatalError(e.message); }
+    } else {
+      document.getElementById('lock-error').textContent = '番号が違います';
+      input.value = '';
+      input.focus();
+    }
+  };
+  document.getElementById('lock-btn').addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', e=>{ if(e.key === 'Enter') tryUnlock(); });
+  input.focus();
+}
+ 
 /* ---------- init ---------- */
 try{
-  loadDate(todayStr());
+  renderLockScreen();
 }catch(e){
   showFatalError(e.message);
 }
 </script>
 </body>
 </html>
+ 
